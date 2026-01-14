@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manual Técnico Tornado 1.4 - ZICO</title>
+    
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
+    
+    <style>
+        /* --- DESIGN SYSTEM UNIFICADO (DEEP DARK) --- */
+        :root {
+            --bg-body: #05080a;      
+            --bg-sidebar: #081017;   
+            --bg-card: #0d161f;      
+            --accent: #64ffda;       
+            --whatsapp: #25d366;
+            --text-main: #94a3b8;
+            --text-white: #e6f1ff;
+            --border: #1e2d3d;
+            --danger: #ff5252;
+        }
+
+        /* --- SCROLLBAR TEMA DARK --- */
+        * { scrollbar-width: thin; scrollbar-color: var(--accent) var(--bg-body); }
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: var(--bg-body); }
+        ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 10px; border: 2px solid var(--bg-body); }
+        ::-webkit-scrollbar-thumb:hover { background: var(--accent); }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; scroll-behavior: smooth; }
+        body { font-family: 'Segoe UI', sans-serif; background-color: var(--bg-body); color: var(--text-main); display: flex; height: 100vh; overflow: hidden; }
+
+        /* --- SIDEBAR --- */
+        .sidebar { width: 320px; background: var(--bg-sidebar); border-right: 1px solid var(--border); display: flex; flex-direction: column; z-index: 2000; }
+        .brand { padding: 30px 20px; text-align: center; border-bottom: 1px solid var(--border); }
+        .brand h1 { color: #fff; font-size: 1.3rem; letter-spacing: 2px; text-transform: uppercase; }
+        .brand span { color: var(--accent); border: 1px solid var(--accent); padding: 4px 10px; border-radius: 4px; font-size: 0.75rem; display: inline-block; margin-top: 8px; font-weight: bold; }
+        
+        .search-container { padding: 20px; position: relative; }
+        .search-input { width: 100%; padding: 12px 40px; background: rgba(0,0,0,0.3); border: 1px solid var(--border); border-radius: 8px; color: #fff; outline: none; }
+        .search-icon { position: absolute; left: 32px; top: 34px; color: #5d748a; }
+
+        .nav-scroll { flex: 1; overflow-y: auto; padding-bottom: 40px; }
+        .nav-divider { padding: 20px 25px 5px; font-size: 0.7rem; color: #5d748a; text-transform: uppercase; font-weight: bold; }
+        .nav-item { display: flex; align-items: center; padding: 12px 25px; color: var(--text-main); text-decoration: none; font-size: 0.85rem; border-left: 3px solid transparent; transition: 0.2s; }
+        .nav-item:hover, .nav-item.active { background: rgba(100, 255, 218, 0.05); color: var(--accent); border-left-color: var(--accent); }
+        .nav-item i { margin-right: 12px; font-size: 1.1rem; }
+
+        /* --- CONTEÚDO --- */
+        .main-content { flex: 1; overflow-y: auto; padding: 40px; }
+        .container { max-width: 1250px; margin: 0 auto; }
+        h2 { font-size: 1.5rem; color: #fff; margin: 50px 0 20px; border-bottom: 1px solid var(--border); padding-bottom: 10px; display: flex; align-items: center; gap: 12px; }
+        h2 i { color: var(--accent); }
+        h3 { color: var(--accent); margin: 25px 0 10px; font-size: 1.1rem; text-transform: uppercase; }
+
+        .data-card { background: var(--bg-card); border: 1px solid var(--border); padding: 25px; border-radius: 12px; margin-bottom: 25px; line-height: 1.6; }
+        .img-wrapper { border: 1px solid var(--border); border-radius: 12px; overflow: hidden; margin: 20px 0; background: #000; }
+        .img-wrapper img { width: 100%; display: block; }
+
+        /* --- TRANSMISSÃO LADO A LADO --- */
+        .transmission-layout { 
+            display: grid; grid-template-columns: 1.1fr 0.9fr; gap: 20px; margin-top: 20px;
+            background: var(--bg-card); padding: 15px; border-radius: 12px; border: 1px solid var(--border);
+        }
+        .diagram-box { background: #000; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05); display: flex; align-items: center; justify-content: center; }
+        .diagram-img { width: 100%; height: auto; mix-blend-mode: screen; filter: invert(1) contrast(1.1) brightness(1.1); }
+        .table-side { max-height: 750px; overflow-y: auto; background: rgba(0,0,0,0.2); border-radius: 8px; }
+
+        /* --- TABELAS --- */
+        .table-responsive { overflow-x: auto; margin: 20px 0; border-radius: 12px; border: 1px solid var(--border); }
+        table { width: 100%; border-collapse: collapse; font-size: 0.8rem; }
+        th { background: #0a131a; color: var(--accent); padding: 15px; text-align: left; position: sticky; top: 0; z-index: 10; font-size: 0.7rem; border-bottom: 1px solid var(--border); }
+        td { padding: 10px 12px; border-bottom: 1px solid rgba(255,255,255,0.05); color: #c0c7d6; }
+        tr:hover { background: rgba(100, 255, 218, 0.03); }
+        
+        .qty-cell { text-align: center; font-weight: bold; color: var(--accent); background: rgba(0,0,0,0.1); }
+        .code-cell { font-family: monospace; font-weight: bold; color: var(--text-white); }
+        
+        /* BOTÃO COTAR */
+        .btn-cotar { 
+            border: 1px solid var(--whatsapp); color: var(--whatsapp); padding: 4px 8px; 
+            border-radius: 4px; text-decoration: none; font-weight: bold; font-size: 0.65rem;
+            display: inline-flex; align-items: center; gap: 4px; transition: 0.2s;
+        }
+        .btn-cotar:hover { background: var(--whatsapp); color: #000; }
+
+        .alert-danger { background: rgba(255, 82, 82, 0.1); border-left: 5px solid var(--danger); color: #ff8a8a; padding: 20px; border-radius: 8px; margin: 20px 0; }
+
+        @media (max-width: 1100px) {
+            .transmission-layout { grid-template-columns: 1fr; }
+            .sidebar { position: fixed; transform: translateX(-100%); height: 100%; }
+            .sidebar.open { transform: translateX(0); }
+        }
+    </style>
+</head>
+<body>
+
+    <nav class="sidebar">
+        <div class="brand"><h1>TORNOARIA ZICO</h1><span>Manual Tornado 1.4</span></div>
+        <div class="search-container">
+            <i class="material-icons-round search-icon">search</i>
+            <input type="text" id="searchInput" class="search-input" placeholder="Buscar no manual..." onkeyup="searchAllTables()">
+        </div>
+        <div class="nav-scroll">
+            <a href="#capa" class="nav-item active"><i class="material-icons-round">home</i> Capa</a>
+            <div class="nav-divider">TRANSMISSÃO</div>
+            <a href="#transmissao" class="nav-item"><i class="material-icons-round">account_tree</i> Sistema de Transmissão (35 Itens)</a>
+            <div class="nav-divider">REGULAGENS</div>
+            <a href="#regulagem-tecnica" class="nav-item"><i class="material-icons-round">architecture</i> Faca, Carro e Bitola</a>
+            <a href="#regulagem-auxiliar" class="nav-item"><i class="material-icons-round">settings_input_component</i> Centradores e Derrubador</a>
+            <div class="nav-divider">LISTA INTEGRAL</div>
+            <a href="#lista-completa" class="nav-item"><i class="material-icons-round">format_list_bulleted</i> Lista Geral (100+ Peças)</a>
+        </div>
+    </nav>
+
+    <main class="main-content">
+        <div class="container">
+            
+            <!-- CAPA -->
+            <section id="capa">
+                <h1 style="color:#fff; font-size: 2.5rem;">Linha Tornado 1.4</h1>
+                <p style="color:var(--accent); font-weight: bold; letter-spacing: 2px;">MANUAL DE OPERAÇÃO E COMPONENTES</p>
+                <div class="img-wrapper"><img src="imagens/capa.jpg" alt="Capa"></div>
+                <div class="data-card"><strong>Cliente:</strong> COMPENSADOS FCOMP | <strong>Ano:</strong> 2025</div>
+            </section>
+
+            <!-- TRANSMISSÃO INTERATIVA -->
+            <section id="transmissao">
+                <h2><i class="material-icons-round">account_tree</i> Sistema de Transmissão</h2>
+                <div class="transmission-layout">
+                    <div class="diagram-box"><img src="imagens/transmissao.jpg" class="diagram-img"></div>
+                    <div class="table-side">
+                        <table id="tableTransmissao">
+                            <thead>
+                                <tr><th>ITEM</th><th>DESCRIÇÃO</th><th class="qty-cell">QTD</th><th>AÇÃO</th></tr>
+                            </thead>
+                            <tbody>
+                                <tr><td>01</td><td>Retentor 80 x 110 x 12</td><td class="qty-cell">06</td><td><a href="https://wa.me/5547991866317?text=Cotar: Transmissão Item 01" class="btn-cotar">Cotar</a></td></tr>
+                                <tr><td>02</td><td>Retentor 70 x 110 x 10</td><td class="qty-cell">02</td><td><a href="https://wa.me/5547991866317?text=Cotar: Transmissão Item 02" class="btn-cotar">Cotar</a></td></tr>
+                                <tr><td>03</td><td>Rolamento 22214 C3</td><td class="qty-cell">04</td><td><a href="https://wa.me/5547991866317?text=Cotar: Transmissão Item 03" class="btn-cotar">Cotar</a></td></tr>
+                                <tr><td>04</td><td>Calço 20mm</td><td class="qty-cell">02</td><td><a href="https://wa.me/5547991866317?text=Cotar: Transmissão Item 04" class="btn-cotar">Cotar</a></td></tr>
+                                <tr><td>05</td><td>Arruela ARR2770</td><td class="qty-cell">02</td><td><a href="https://wa.me/5547991866317?text=Cotar: Transmissão Item 05" class="btn-cotar">Cotar</a></td></tr>
+                                <tr><td>06</td><td>Tampa Mancal MT2770</td><td class="qty-cell">04</td><td><a href="https://wa.me/5547991866317?text=Cotar: Transmissão Item 06" class="btn-cotar">Cotar</a></td></tr>
+                                <tr><td>07</td><td>Mancal MT2770.A</td><td class="qty-cell">04</td><td><a href="https://wa.me/5547991866317?text=Cotar: Transmissão Item 07" class="btn-cotar">Cotar</a></td></tr>
+                                <tr><td>08</td><td>Engrenagem 2.80.22 EETRD 2770</td><td class="qty-cell">02</td><td><a href="https://wa.me/5547991866317?text=Cotar: Transmissão Item 08" class="btn-cotar">Cotar</a></td></tr>
+                                <tr><td>09</td><td>Anel Fix. 65 x 95</td><td class="qty-cell">02</td><td><a href="https://wa.me/5547991866317?text=Cotar: Transmissão Item 09" class="btn-cotar">Cotar</a></td></tr>
+                                <tr><td>10</td><td>Engrenagem 2.80.16 ETRD2770</td><td class="qty-cell">06</td><td><a href="https://wa.me/5547991866317?text=Cotar: Transmissão Item 10" class="btn-cotar">Cotar</a></td></tr>
+                                <tr><td>11</td><td>Acoplamento Principal GR214</td><td class="qty-cell">01</td><td><a href="https://wa.me/5547991866317?text=Cotar: Transmissão Item 11" class="btn-cotar">Cotar</a></td></tr>
+                                <tr><td>12</td><td>Engrenagem 2.2.60.23</td><td class="qty-cell">02</td><td><a href="https://wa.me/5547991866317?text=Cotar: Transmissão Item 12" class="btn-cotar">Cotar</a></td></tr>
+                                <tr><td>13</td><td>Engrenagem 2.2.60.115</td><td class="qty-cell">02</td><td><a href="https://wa.me/5547991866317?text=Cotar: Transmissão Item 13" class="btn-cotar">Cotar</a></td></tr>
+                                <tr><td>14</td><td>Engrenagem 2.80.22 EEARD2770</td><td class="qty-cell">02</td><td><a href="https://wa.me/5547991866317?text=Cotar: Transmissão Item 14" class="btn-cotar">Cotar</a></td></tr>
+                                <tr><td>15</td><td>Engrenagem 2.80.24 EEAT15725</td><td class="qty-cell">01</td><td><a href="https://wa.me/5547991866317?text=Cotar: Transmissão Item 15" class="btn-cotar">Cotar</a></td></tr>
+                                <tr><td>16</td><td>Engrenagem 2.80.21 EETC15725.1</td><td class="qty-cell">01</td><td><a href="https://wa.me/5547991866317?text=Cotar: Transmissão Item 16" class="btn-cotar">Cotar</a></td></tr>
+                                <tr><td>17</td><td>Anel Fix. 50 x 80</td><td class="qty-cell">02</td><td><a href="https://wa.me/5547991866317?text=Cotar: Transmissão Item 17" class="btn-cotar">Cotar</a></td></tr>
+                                <tr><td>18</td><td>Mancal SN 513</td><td class="qty-cell">02</td><td><a href="https://wa.me/5547991866317?text=Cotar: Transmissão Item 18" class="btn-cotar">Cotar</a></td></tr>
+                                <tr><td>19</td><td>Vedação Mancal TSNG 513 (020115)</td><td class="qty-cell">02</td><td><a href="https://wa.me/5547991866317?text=Cotar: Transmissão Item 19" class="btn-cotar">Cotar</a></td></tr>
+                                <tr><td>20</td><td>Bucha de Fixação H313</td><td class="qty-cell">02</td><td><a href="https://wa.me/5547991866317?text=Cotar: Transmissão Item 20" class="btn-cotar">Cotar</a></td></tr>
+                                <tr><td>21</td><td>Anel Espaçador R22213/SN513</td><td class="qty-cell">02</td><td><a href="https://wa.me/5547991866317?text=Cotar: Transmissão Item 21" class="btn-cotar">Cotar</a></td></tr>
+                                <tr><td>22</td><td>Rolamento 22213 K C3 (024509)</td><td class="qty-cell">02</td><td><a href="https://wa.me/5547991866317?text=Cotar: Transmissão Item 22" class="btn-cotar">Cotar</a></td></tr>
+                                <tr><td>23</td><td>Mancal SN 511</td><td class="qty-cell">02</td><td><a href="https://wa.me/5547991866317?text=Cotar: Transmissão Item 23" class="btn-cotar">Cotar</a></td></tr>
+                                <tr><td>24</td><td>Vedação Mancal TSNG 511 (020111)</td><td class="qty-cell">05</td><td><a href="https://wa.me/5547991866317?text=Cotar: Transmissão Item 24" class="btn-cotar">Cotar</a></td></tr>
+                                <tr><td>25</td><td>Bucha de Fixação H311</td><td class="qty-cell">05</td><td><a href="https://wa.me/5547991866317?text=Cotar: Transmissão Item 25" class="btn-cotar">Cotar</a></td></tr>
+                                <tr><td>26</td><td>Anel Espaçador R22211/SN511</td><td class="qty-cell">02</td><td><a href="https://wa.me/5547991866317?text=Cotar: Transmissão Item 26" class="btn-cotar">Cotar</a></td></tr>
+                                <tr><td>27</td><td>Rolamento 22211 K C3</td><td class="qty-cell">05</td><td><a href="https://wa.me/5547991866317?text=Cotar: Transmissão Item 27" class="btn-cotar">Cotar</a></td></tr>
+                                <tr><td>28</td><td>Engrenagem 2.80.18 EETCR15725</td><td class="qty-cell">01</td><td><a href="https://wa.me/5547991866317?text=Cotar: Transmissão Item 28" class="btn-cotar">Cotar</a></td></tr>
+                                <tr><td>29</td><td>Engrenagem 2.80.19 EECT15725</td><td class="qty-cell">01</td><td><a href="https://wa.me/5547991866317?text=Cotar: Transmissão Item 29" class="btn-cotar">Cotar</a></td></tr>
+                                <tr><td>30</td><td>Engrenagem 3.60.15 ECR15725</td><td class="qty-cell">02</td><td><a href="https://wa.me/5547991866317?text=Cotar: Transmissão Item 30" class="btn-cotar">Cotar</a></td></tr>
+                                <tr><td>31</td><td>Engrenagem 3.60.17 EDETCR15725</td><td class="qty-cell">02</td><td><a href="https://wa.me/5547991866317?text=Cotar: Transmissão Item 31" class="btn-cotar">Cotar</a></td></tr>
+                                <tr><td>32</td><td>Bucha Engrenagem BEDETCR15725</td><td class="qty-cell">02</td><td><a href="https://wa.me/5547991866317?text=Cotar: Transmissão Item 32" class="btn-cotar">Cotar</a></td></tr>
+                                <tr><td>33</td><td>Tampa Mancal Transmissão 22690.132</td><td class="qty-cell">03</td><td><a href="https://wa.me/5547991866317?text=Cotar: Transmissão Item 33" class="btn-cotar">Cotar</a></td></tr>
+                                <tr><td>34</td><td>Mancal Transmissão 22690.130</td><td class="qty-cell">03</td><td><a href="https://wa.me/5547991866317?text=Cotar: Transmissão Item 34" class="btn-cotar">Cotar</a></td></tr>
+                                <tr><td>35</td><td>Anel Fix. 60 x 90</td><td class="qty-cell">01</td><td><a href="https://wa.me/5547991866317?text=Cotar: Transmissão Item 35" class="btn-cotar">Cotar</a></td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- REGULAGENS TÉCNICAS -->
+            <section id="regulagem-tecnica">
+                <h2><i class="material-icons-round">architecture</i> Regulagens Técnicas</h2>
+                <div class="data-card">
+                    <h3>Faca e Qualidade</h3>
+                    <p>Faca pré-definida com <strong>ângulo de 20°</strong> e medida de <strong>46,8 mm</strong>. Para laminação firme, reduza a medida da faca para aumentar o "peito" da mesma no corte.</p>
+                    <h3>Ângulo do Carro e Bitola</h3>
+                    <p>Ajuste do eixo 2 (bitola) no acoplamento do lado do operador para garantir o paralelismo entre contra rolo e faca.</p>
+                </div>
+            </section>
+
+            <section id="regulagem-auxiliar">
+                <h2><i class="material-icons-round">settings_input_component</i> Centradores e Derrubador</h2>
+                <div class="data-card">
+                    <h3>Derrubador de Roletes</h3>
+                    <ul>
+                        <li><strong>01:</strong> 1,6mm a 2,4mm</li>
+                        <li><strong>02:</strong> 1,3mm a 1,6mm</li>
+                        <li><strong>03:</strong> 0,8mm a 1,3mm</li>
+                        <li><strong>05:</strong> 2,5mm a 3,5mm</li>
+                    </ul>
+                    <div class="alert-danger">AVISO: Nunca acione o centrador de toras durante o trabalho de laminação.</div>
+                </div>
+            </section>
+
+            <!-- LISTA GERAL DE PEÇAS (INTEGRAL) -->
+            <section id="lista-completa">
+                <h2><i class="material-icons-round">format_list_bulleted</i> Lista Geral de Componentes</h2>
+                <div class="table-responsive">
+                    <table id="tableGeral">
+                        <thead>
+                            <tr><th>CÓDIGO</th><th>PRODUTO / DESCRIÇÃO</th><th class="qty-cell">QTDE</th><th>AÇÃO</th></tr>
+                        </thead>
+                        <tbody>
+                            <!-- TRANSCRIÇÃO INTEGRAL DA LISTA DE PRODUTOS -->
+                            <tr><td class="code-cell">025124</td><td>ACOPLAMENTO A 1010 GM52 METALFLEX</td><td class="qty-cell">2</td><td><a href="https://wa.me/5547991866317?text=Cotar: 025124" class="btn-cotar">Cotar</a></td></tr>
+                            <tr><td class="code-cell">021950</td><td>ACOPLAMENTO GR 214</td><td class="qty-cell">1</td><td><a href="https://wa.me/5547991866317?text=Cotar: 021950" class="btn-cotar">Cotar</a></td></tr>
+                            <tr><td class="code-cell">024899</td><td>ACOPLAMENTO MSN 145</td><td class="qty-cell">1</td><td><a href="https://wa.me/5547991866317?text=Cotar: 024899" class="btn-cotar">Cotar</a></td></tr>
+                            <tr><td class="code-cell">---</td><td>ANEL FIX CN210 1120 D.50X80 SIT-LOCK</td><td class="qty-cell">2</td><td><a href="https://wa.me/5547991866317?text=Cotar: ANEL FIX 50x80" class="btn-cotar">Cotar</a></td></tr>
+                            <tr><td class="code-cell">---</td><td>ANEL FIX CN210 1120 D.60X90 SIT-LOCK</td><td class="qty-cell">1</td><td><a href="https://wa.me/5547991866317?text=Cotar: ANEL FIX 60x90" class="btn-cotar">Cotar</a></td></tr>
+                            <tr><td class="code-cell">---</td><td>ANEL FIX CN210 1120 D.65X95 SIT-LOCK</td><td class="qty-cell">2</td><td><a href="https://wa.me/5547991866317?text=Cotar: ANEL FIX 65x95" class="btn-cotar">Cotar</a></td></tr>
+                            <tr><td class="code-cell">026473</td><td>ARTICULACAO OSCILANTE P/CIL. 40MM M WORK</td><td class="qty-cell">1</td><td><a href="https://wa.me/5547991866317?text=Cotar: 026473" class="btn-cotar">Cotar</a></td></tr>
+                            <tr><td class="code-cell">026364</td><td>BLOCO MANIFOLD SERIE 70 P/6 VALVULAS MWORK</td><td class="qty-cell">1</td><td><a href="https://wa.me/5547991866317?text=Cotar: 026364" class="btn-cotar">Cotar</a></td></tr>
+                            <tr><td class="code-cell">010298</td><td>BRONZE BUCHA TM 620 3 X 1.1/2</td><td class="qty-cell">5</td><td><a href="https://wa.me/5547991866317?text=Cotar: 010298" class="btn-cotar">Cotar</a></td></tr>
+                            <tr><td class="code-cell">---</td><td>BUCHA CONICA P/ENGRENAGEM BEDETCR 15725</td><td class="qty-cell">2</td><td><a href="https://wa.me/5547991866317?text=Cotar: BUCHA BEDETCR" class="btn-cotar">Cotar</a></td></tr>
+                            <tr><td class="code-cell">026350</td><td>BUCHA CONICA P/ENGRENAGEM 22690.126 KIT</td><td class="qty-cell">2</td><td><a href="https://wa.me/5547991866317?text=Cotar: 026350" class="btn-cotar">Cotar</a></td></tr>
+                            <tr><td class="code-cell">021173</td><td>BUCHA ESTRIADA CONTRA ROLO LECR610</td><td class="qty-cell">2</td><td><a href="https://wa.me/5547991866317?text=Cotar: 021173" class="btn-cotar">Cotar</a></td></tr>
+                            <tr><td class="code-cell">---</td><td>BUCHA FIXACAO H311</td><td class="qty-cell">5</td><td><a href="https://wa.me/5547991866317?text=Cotar: H311" class="btn-cotar">Cotar</a></td></tr>
+                            <tr><td class="code-cell">---</td><td>BUCHA FIXACAO H313</td><td class="qty-cell">2</td><td><a href="https://wa.me/5547991866317?text=Cotar: H313" class="btn-cotar">Cotar</a></td></tr>
+                            <tr><td class="code-cell">019816</td><td>CARDAN CRUZETA MB 1113/2213 38 X 90 MM</td><td class="qty-cell">2</td><td><a href="https://wa.me/5547991866317?text=Cotar: 019816" class="btn-cotar">Cotar</a></td></tr>
+                            <tr><td class="code-cell">017983</td><td>CARDAN GARFO C/FLANGE 8 FUROS MB 1113</td><td class="qty-cell">2</td><td><a href="https://wa.me/5547991866317?text=Cotar: 017983" class="btn-cotar">Cotar</a></td></tr>
+                            <tr><td class="code-cell">013839</td><td>CARDAN GARFO MB 608/1113/1313/1513</td><td class="qty-cell">1</td><td><a href="https://wa.me/5547991866317?text=Cotar: 013839" class="btn-cotar">Cotar</a></td></tr>
+                            <tr><td class="code-cell">011240</td><td>CARDAN LUVA MB 1113/1313/1513/2213</td><td class="qty-cell">1</td><td><a href="https://wa.me/5547991866317?text=Cotar: 011240" class="btn-cotar">Cotar</a></td></tr>
+                            <tr><td class="code-cell">014679</td><td>CARDAN PONTEIRA DESLIZANTE MB 1113/1313</td><td class="qty-cell">1</td><td><a href="https://wa.me/5547991866317?text=Cotar: 014679" class="btn-cotar">Cotar</a></td></tr>
+                            <tr><td class="code-cell">026341</td><td>CILINDRO HIDRAULICO RHINO R8 5036M5</td><td class="qty-cell">2</td><td><a href="https://wa.me/5547991866317?text=Cotar: 026341" class="btn-cotar">Cotar</a></td></tr>
+                            <tr><td class="code-cell">026340</td><td>CILINDRO HIDRAULICO RHINO SC 050M7</td><td class="qty-cell">5</td><td><a href="https://wa.me/5547991866317?text=Cotar: 026340" class="btn-cotar">Cotar</a></td></tr>
+                            <tr><td class="code-cell">026472</td><td>CILINDRO PNEUMATICO 40 X 100 ISO 15552</td><td class="qty-cell">1</td><td><a href="https://wa.me/5547991866317?text=Cotar: 026472" class="btn-cotar">Cotar</a></td></tr>
+                            <tr><td class="code-cell">026366</td><td>CILINDRO PNEUMATICO 80 X 550 ISO 15552</td><td class="qty-cell">2</td><td><a href="https://wa.me/5547991866317?text=Cotar: 026366" class="btn-cotar">Cotar</a></td></tr>
+                            <tr><td class="code-cell">---</td><td>CORRENTE ASA 60/3 DID</td><td class="qty-cell">3</td><td><a href="https://wa.me/5547991866317?text=Cotar: Corrente ASA 60" class="btn-cotar">Cotar</a></td></tr>
+                            <tr><td class="code-cell">---</td><td>CORRENTE DUPLA 80/2 DID</td><td class="qty-cell">11</td><td><a href="https://wa.me/5547991866317?text=Cotar: Corrente ASA 80" class="btn-cotar">Cotar</a></td></tr>
+                            <tr><td class="code-cell">026455</td><td>COXIM DO CILINDRO DE VIBRACAO</td><td class="qty-cell">2</td><td><a href="https://wa.me/5547991866317?text=Cotar: 026455" class="btn-cotar">Cotar</a></td></tr>
+                            <tr><td class="code-cell">023562</td><td>DISTRIBUIDOR PROGRESSIVO VPK-03001</td><td class="qty-cell">1</td><td><a href="https://wa.me/5547991866317?text=Cotar: 023562" class="btn-cotar">Cotar</a></td></tr>
+                            <tr><td class="code-cell">---</td><td>EMENDA ASA 80/2 DID</td><td class="qty-cell">6</td><td><a href="https://wa.me/5547991866317?text=Cotar: Emenda ASA 80" class="btn-cotar">Cotar</a></td></tr>
+                            <tr><td class="code-cell">---</td><td>EMENDA DUPLA 60/2 DID</td><td class="qty-cell">4</td><td><a href="https://wa.me/5547991866317?text=Cotar: Emenda ASA 60" class="btn-cotar">Cotar</a></td></tr>
+                            <tr><td class="code-cell">024968</td><td>EMENDA TRIPLA 60/3 DID</td><td class="qty-cell">2</td><td><a href="https://wa.me/5547991866317?text=Cotar: 024968" class="btn-cotar">Cotar</a></td></tr>
+                            <tr><td class="code-cell">022794</td><td>ENGRENAGEM TEMPERADA 2.80.16 ETRD2770</td><td class="qty-cell">6</td><td><a href="https://wa.me/5547991866317?text=Cotar: 022794" class="btn-cotar">Cotar</a></td></tr>
+                            <tr><td class="code-cell">025080</td><td>ENGRENAGEM TEMPERADA 2.80.18 EETCR15725</td><td class="qty-cell">1</td><td><a href="https://wa.me/5547991866317?text=Cotar: 025080" class="btn-cotar">Cotar</a></td></tr>
+                            <tr><td class="code-cell">025083</td><td>ENGRENAGEM TEMPERADA 2.80.19 EECT15725</td><td class="qty-cell">1</td><td><a href="https://wa.me/5547991866317?text=Cotar: 025083" class="btn-cotar">Cotar</a></td></tr>
+                            <tr><td class="code-cell">025085</td><td>ENGRENAGEM TEMPERADA 2.80.21 EETC15725</td><td class="qty-cell">1</td><td><a href="https://wa.me/5547991866317?text=Cotar: 025085" class="btn-cotar">Cotar</a></td></tr>
+                            <tr><td class="code-cell">022797</td><td>ENGRENAGEM TEMPERADA 2.80.22 EEARD2770</td><td class="qty-cell">2</td><td><a href="https://wa.me/5547991866317?text=Cotar: 022797" class="btn-cotar">Cotar</a></td></tr>
+                            <tr><td class="code-cell">022796</td><td>ENGRENAGEM TEMPERADA 2.80.22 EETRD2770</td><td class="qty-cell">2</td><td><a href="https://wa.me/5547991866317?text=Cotar: 022796" class="btn-cotar">Cotar</a></td></tr>
+                            <tr><td class="code-cell">025084</td><td>ENGRENAGEM TEMPERADA 2.80.24 EEAT15725</td><td class="qty-cell">1</td><td><a href="https://wa.me/5547991866317?text=Cotar: 025084" class="btn-cotar">Cotar</a></td></tr>
+                            <tr><td class="code-cell">025079</td><td>ENGRENAGEM TEMPERADA 3.60.15 ECR 15725</td><td class="qty-cell">2</td><td><a href="https://wa.me/5547991866317?text=Cotar: 025079" class="btn-cotar">Cotar</a></td></tr>
+                            <tr><td class="code-cell">025081</td><td>ENGRENAGEM TEMPERADA 3.60.17 EDETCR 15725</td><td class="qty-cell">2</td><td><a href="https://wa.me/5547991866317?text=Cotar: 025081" class="btn-cotar">Cotar</a></td></tr>
+                            <tr><td class="code-cell">021320</td><td>ENGRENAGEM Z=32 MP 8620 CONJUNTO</td><td class="qty-cell">2</td><td><a href="https://wa.me/5547991866317?text=Cotar: 021320" class="btn-cotar">Cotar</a></td></tr>
+                            <tr><td class="code-cell">025324</td><td>EXAUSTOR CENTRIFUGO VENTISILVA 1HP</td><td class="qty-cell">1</td><td><a href="https://wa.me/5547991866317?text=Cotar: 025324" class="btn-cotar">Cotar</a></td></tr>
+                            <tr><td class="code-cell">###</td><td>FACA 180X16X1500 22690.300</td><td class="qty-cell">---</td><td><a href="https://wa.me/5547991866317?text=Cotar: Faca 1500" class="btn-cotar">Cotar</a></td></tr>
+                            <tr><td class="code-cell">026367</td><td>FILTRO REGULADOR LUBRIFICADOR 1/2 SY2</td><td class="qty-cell">1</td><td><a href="https://wa.me/5547991866317?text=Cotar: 026367" class="btn-cotar">Cotar</a></td></tr>
+                            <tr><td class="code-cell">026339</td><td>FUSO 80MM PASSO 20 2 ENT NITRETADO</td><td class="qty-cell">2</td><td><a href="https://wa.me/5547991866317?text=Cotar: 026339" class="btn-cotar">Cotar</a></td></tr>
+                            <tr><td class="code-cell">025943</td><td>GRAXA KLUBERPLEX BE 91-502 SAM</td><td class="qty-cell">3</td><td><a href="https://wa.me/5547991866317?text=Cotar: 025943" class="btn-cotar">Cotar</a></td></tr>
+                            <tr><td class="code-cell">026203</td><td>GUIA LINEAR BLOCO ESFERAS A-65LS</td><td class="qty-cell">2</td><td><a href="https://wa.me/5547991866317?text=Cotar: 026203" class="btn-cotar">Cotar</a></td></tr>
+                            <tr><td class="code-cell">026204</td><td>GUIA LINEAR TRILHO ESFERAS A-65R</td><td class="qty-cell">2</td><td><a href="https://wa.me/5547991866317?text=Cotar: 026204" class="btn-cotar">Cotar</a></td></tr>
+                            <tr><td class="code-cell">###</td><td>HASTE CROMADA TEMPERADA 40,00 MM</td><td class="qty-cell">2</td><td><a href="https://wa.me/5547991866317?text=Cotar: Haste 40mm" class="btn-cotar">Cotar</a></td></tr>
+                            <tr><td class="code-cell">026259</td><td>LABIRINTO CENTRAL TRACAO TLZ 2800</td><td class="qty-cell">16</td><td><a href="https://wa.me/5547991866317?text=Cotar: 026259" class="btn-cotar">Cotar</a></td></tr>
+                            <tr><td class="code-cell">020110</td><td>MANCAL ANEL ESPACADOR ROL.22211</td><td class="qty-cell">2</td><td><a href="https://wa.me/5547991866317?text=Cotar: 020110" class="btn-cotar">Cotar</a></td></tr>
+                            <tr><td class="code-cell">020114</td><td>MANCAL ANEL ESPACADOR ROL.22213</td><td class="qty-cell">1</td><td><a href="https://wa.me/5547991866317?text=Cotar: 020114" class="btn-cotar">Cotar</a></td></tr>
+                            <tr><td class="code-cell">026436</td><td>MANCAL CONTRA ROLO MCR 22690.125</td><td class="qty-cell">5</td><td><a href="https://wa.me/5547991866317?text=Cotar: 026436" class="btn-cotar">Cotar</a></td></tr>
+                            <tr><td class="code-cell">026433</td><td>MANCAL ROLO DUPLO MRD610.A</td><td class="qty-cell">8</td><td><a href="https://wa.me/5547991866317?text=Cotar: 026433" class="btn-cotar">Cotar</a></td></tr>
+                            <tr><td class="code-cell">---</td><td>MANCAL SNAL 511 / 513</td><td class="qty-cell">4</td><td><a href="https://wa.me/5547991866317?text=Cotar: Mancal SNAL" class="btn-cotar">Cotar</a></td></tr>
+                            <tr><td class="code-cell">022971</td><td>MANCAL TRANSMISSÃO ROLO MT2770</td><td class="qty-cell">4</td><td><a href="https://wa.me/5547991866317?text=Cotar: 022971" class="btn-cotar">Cotar</a></td></tr>
+                            <tr><td class="code-cell">020111</td><td>MANCAL VEDACAO MANCAL TSNG 511</td><td class="qty-cell">5</td><td><a href="https://wa.me/5547991866317?text=Cotar: 020111" class="btn-cotar">Cotar</a></td></tr>
+                            <tr><td class="code-cell">020115</td><td>MANCAL VEDACAO MANCAL TSNG 513</td><td class="qty-cell">2</td><td><a href="https://wa.me/5547991866317?text=Cotar: 020115" class="btn-cotar">Cotar</a></td></tr>
+                            <tr><td class="code-cell">###</td><td>MANCAL TRANSMISSAO 22690.130 / 131</td><td class="qty-cell">5</td><td><a href="https://wa.me/5547991866317?text=Cotar: Mancal 130/131" class="btn-cotar">Cotar</a></td></tr>
+                            <tr><td class="code-cell">025041</td><td>MANOMETRO 1/4 VERTIC 300BAR</td><td class="qty-cell">1</td><td><a href="https://wa.me/5547991866317?text=Cotar: 025041" class="btn-cotar">Cotar</a></td></tr>
+                            <tr><td class="code-cell">---</td><td>MOTOR TRIF 55KW (75HP) 6 POLOS</td><td class="qty-cell">1</td><td><a href="https://wa.me/5547991866317?text=Cotar: Motor 75HP" class="btn-cotar">Cotar</a></td></tr>
+                            <tr><td class="code-cell">---</td><td>OLEO HIDRAULICO 68</td><td class="qty-cell">110</td><td><a href="https://wa.me/5547991866317?text=Cotar: Oleo 68" class="btn-cotar">Cotar</a></td></tr>
+                            <tr><td class="code-cell">026432</td><td>PONTEIRA CENTRAL PCCR 22690.122</td><td class="qty-cell">2</td><td><a href="https://wa.me/5547991866317?text=Cotar: 026432" class="btn-cotar">Cotar</a></td></tr>
+                            <tr><td class="code-cell">021183</td><td>PONTEIRA ESTRIADA PECR610</td><td class="qty-cell">2</td><td><a href="https://wa.me/5547991866317?text=Cotar: 021183" class="btn-cotar">Cotar</a></td></tr>
+                            <tr><td class="code-cell">021782</td><td>PONTEIRA ROLO DUPLO PRD6102</td><td class="qty-cell">4</td><td><a href="https://wa.me/5547991866317?text=Cotar: 021782" class="btn-cotar">Cotar</a></td></tr>
+                            <tr><td class="code-cell">011847</td><td>PONTEIRA ROTULAR 12 X 1,25MM CIL 40</td><td class="qty-cell">1</td><td><a href="https://wa.me/5547991866317?text=Cotar: 011847" class="btn-cotar">Cotar</a></td></tr>
+                            <tr><td class="code-cell">026435</td><td>PONTEIRA TRACAO PTCR 22690.121</td><td class="qty-cell">2</td><td><a href="https://wa.me/5547991866317?text=Cotar: 026435" class="btn-cotar">Cotar</a></td></tr>
+                            <tr><td class="code-cell">026434</td><td>PORCA BRONZE / FUSO 80MMX20</td><td class="qty-cell">2</td><td><a href="https://wa.me/5547991866317?text=Cotar: 026434" class="btn-cotar">Cotar</a></td></tr>
+                            <tr><td class="code-cell">026166</td><td>PORCA KMT 10 50 X 1,5 MM</td><td class="qty-cell">2</td><td><a href="https://wa.me/5547991866317?text=Cotar: 026166" class="btn-cotar">Cotar</a></td></tr>
+                            <tr><td class="code-cell">026368</td><td>PORCA ZM 45</td><td class="qty-cell">2</td><td><a href="https://wa.me/5547991866317?text=Cotar: 026368" class="btn-cotar">Cotar</a></td></tr>
+                            <tr><td class="code-cell">---</td><td>QUADRO COMANDO 600 X 600 X 200MM</td><td class="qty-cell">1</td><td><a href="https://wa.me/5547991866317?text=Cotar: Quadro Comando" class="btn-cotar">Cotar</a></td></tr>
+                            <tr><td class="code-cell">016116</td><td>RASPADOR HIDRAULICO APC-1078</td><td class="qty-cell">1</td><td><a href="https://wa.me/5547991866317?text=Cotar: 016116" class="btn-cotar">Cotar</a></td></tr>
+                            <tr><td class="code-cell">022748</td><td>RASPADOR HIDRAULICO SS PARA A-65</td><td class="qty-cell">2</td><td><a href="https://wa.me/5547991866317?text=Cotar: 022748" class="btn-cotar">Cotar</a></td></tr>
+                            <tr><td class="code-cell">026176</td><td>RETENTOR 170 X 190 X 8,5 MBB</td><td class="qty-cell">4</td><td><a href="https://wa.me/5547991866317?text=Cotar: 026176" class="btn-cotar">Cotar</a></td></tr>
+                            <tr><td class="code-cell">024960</td><td>RETENTOR 42 X 55 X 8 BAF UDSLX</td><td class="qty-cell">2</td><td><a href="https://wa.me/5547991866317?text=Cotar: 024960" class="btn-cotar">Cotar</a></td></tr>
+                            <tr><td class="code-cell">021045</td><td>RETENTOR 42 X 56 X 7 00288BR</td><td class="qty-cell">6</td><td><a href="https://wa.me/5547991866317?text=Cotar: 021045" class="btn-cotar">Cotar</a></td></tr>
+                            <tr><td class="code-cell">021772</td><td>RETENTOR 70 X 110 X 12 1612 BRG</td><td class="qty-cell">2</td><td><a href="https://wa.me/5547991866317?text=Cotar: 021772" class="btn-cotar">Cotar</a></td></tr>
+                            <tr><td class="code-cell">015957</td><td>RETENTOR 80 X 100 X 10 BAG 02664</td><td class="qty-cell">4</td><td><a href="https://wa.me/5547991866317?text=Cotar: 015957" class="btn-cotar">Cotar</a></td></tr>
+                            <tr><td class="code-cell">015886</td><td>RETENTOR 80 X 110 X 12 BR 00900</td><td class="qty-cell">6</td><td><a href="https://wa.me/5547991866317?text=Cotar: 015886" class="btn-cotar">Cotar</a></td></tr>
+                            <tr><td class="code-cell">026146</td><td>RETENTOR 90 X 110 X 12 BAUSL FRD</td><td class="qty-cell">2</td><td><a href="https://wa.me/5547991866317?text=Cotar: 026146" class="btn-cotar">Cotar</a></td></tr>
+                            <tr><td class="code-cell">010192</td><td>RETENTOR SEW 45 X 75 X 8 NBR</td><td class="qty-cell">2</td><td><a href="https://wa.me/5547991866317?text=Cotar: 010192" class="btn-cotar">Cotar</a></td></tr>
+                            <tr><td class="code-cell">---</td><td>ROLAMENTO 2218 K C3 / 22209 C3</td><td class="qty-cell">12</td><td><a href="https://wa.me/5547991866317?text=Cotar: Rolamentos" class="btn-cotar">Cotar</a></td></tr>
+                            <tr><td class="code-cell">---</td><td>ROLAMENTO 22211 K C3 / 22214 C3</td><td class="qty-cell">17</td><td><a href="https://wa.me/5547991866317?text=Cotar: Rolamentos K" class="btn-cotar">Cotar</a></td></tr>
+                            <tr><td class="code-cell">024509</td><td>ROLAMENTO 22213 K C3</td><td class="qty-cell">2</td><td><a href="https://wa.me/5547991866317?text=Cotar: 024509" class="btn-cotar">Cotar</a></td></tr>
+                            <tr><td class="code-cell">026360</td><td>ROLAMENTO AGULHA NKI 45/35</td><td class="qty-cell">4</td><td><a href="https://wa.me/5547991866317?text=Cotar: 026360" class="btn-cotar">Cotar</a></td></tr>
+                            <tr><td class="code-cell">026396</td><td>ROLO CONTRA ROLO FACA 22690</td><td class="qty-cell">1</td><td><a href="https://wa.me/5547991866317?text=Cotar: 026396" class="btn-cotar">Cotar</a></td></tr>
+                            <tr><td class="code-cell">021177</td><td>ROLO DUPLO CENTRAL RDC610</td><td class="qty-cell">4</td><td><a href="https://wa.me/5547991866317?text=Cotar: 021177" class="btn-cotar">Cotar</a></td></tr>
+                            <tr><td class="code-cell">026476</td><td>SEW MOTOREDUTOR SAF47 0,25 CV</td><td class="qty-cell">1</td><td><a href="https://wa.me/5547991866317?text=Cotar: 026476" class="btn-cotar">Cotar</a></td></tr>
+                            <tr><td class="code-cell">026407</td><td>SEW REDUTORA R87 AQSA190/3 TORNADO</td><td class="qty-cell">1</td><td><a href="https://wa.me/5547991866317?text=Cotar: 026407" class="btn-cotar">Cotar</a></td></tr>
+                            <tr><td class="code-cell">010961</td><td>TRAVA ARANHA 90X126X10</td><td class="qty-cell">2</td><td><a href="https://wa.me/5547991866317?text=Cotar: 010961" class="btn-cotar">Cotar</a></td></tr>
+                            <tr><td class="code-cell">013231</td><td>TUBO DE CARDAN RETO 70 X 64 X 3,0</td><td class="qty-cell">1</td><td><a href="https://wa.me/5547991866317?text=Cotar: 013231" class="btn-cotar">Cotar</a></td></tr>
+                            <tr><td class="code-cell">025104</td><td>UNIDADE BOMBA ELETRICA JBE-0.46</td><td class="qty-cell">1</td><td><a href="https://wa.me/5547991866317?text=Cotar: 025104" class="btn-cotar">Cotar</a></td></tr>
+                            <tr><td class="code-cell">010883</td><td>UNIDADE HIDRAULICA 40L 2,0 CV</td><td class="qty-cell">1</td><td><a href="https://wa.me/5547991866317?text=Cotar: 010883" class="btn-cotar">Cotar</a></td></tr>
+                            <tr><td class="code-cell">026365</td><td>VALVULA ESCAPE RAPIDO 1/4 G M WORK</td><td class="qty-cell">2</td><td><a href="https://wa.me/5547991866317?text=Cotar: 026365" class="btn-cotar">Cotar</a></td></tr>
+                            <tr><td class="code-cell">015954</td><td>VALVULA SOLENOIDE 5/2 VIAS 24VCC</td><td class="qty-cell">3</td><td><a href="https://wa.me/5547991866317?text=Cotar: 015954" class="btn-cotar">Cotar</a></td></tr>
+                            <tr><td class="code-cell">026331</td><td>VEDADOR CONTRA ROLO CENTRAL 22690.151</td><td class="qty-cell">4</td><td><a href="https://wa.me/5547991866317?text=Cotar: 026331" class="btn-cotar">Cotar</a></td></tr>
+                            <tr><td class="code-cell">026330</td><td>VEDADOR CONTRA ROLO LATERAL 22690.124</td><td class="qty-cell">10</td><td><a href="https://wa.me/5547991866317?text=Cotar: 026330" class="btn-cotar">Cotar</a></td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+        </div>
+    </main>
+
+    <a href="https://wa.me/5547991865021" class="btn-whatsapp-float" target="_blank">
+        <i class="material-icons-round">support_agent</i>
+    </a>
+
+    <script>
+        function toggleMenu() { document.querySelector('.sidebar').classList.toggle('open'); }
+        
+        function searchAllTables() {
+            let input = document.getElementById('searchInput').value.toLowerCase();
+            let tables = ['tableTransmissao', 'tableGeral'];
+            
+            tables.forEach(id => {
+                let table = document.getElementById(id);
+                let rows = table.getElementsByTagName('tr');
+                for (let i = 1; i < rows.length; i++) {
+                    rows[i].style.display = rows[i].textContent.toLowerCase().includes(input) ? "" : "none";
+                }
+            });
+        }
+    </script>
+</body>
+</html>
